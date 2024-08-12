@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
@@ -9,11 +10,9 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// rokomari
-// sdUviAgZt0MZeALZ
 
 
-const uri = "mongodb+srv://rokomari:sdUviAgZt0MZeALZ@cluster0.ezafyme.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ezafyme.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -40,6 +39,13 @@ async function run() {
             res.send(result);
         })
 
+
+        app.get('/selects', async (req, res) => {
+            const cursor = selectsCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
         // get api with id //
 
         app.get('/products/:id', async (req, res) => {
@@ -58,6 +64,15 @@ async function run() {
         })
 
         // put api //
+
+        // delete api //
+
+        app.delete('/selects/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await selectsCollection.deleteOne(query);
+            res.send(result);
+        })
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
