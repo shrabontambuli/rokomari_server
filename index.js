@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { default: axios } = require('axios');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -9,6 +10,7 @@ const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded());
 
 
 
@@ -29,6 +31,7 @@ async function run() {
         await client.connect();
         const productCollection = client.db('rokomari').collection('allProduct');
         const selectsCollection = client.db('rokomari').collection('selects');
+        const payments = client.db('rokomari').collection('payment');
 
 
         // get api //
@@ -73,6 +76,99 @@ async function run() {
             const result = await selectsCollection.deleteOne(query);
             res.send(result);
         })
+
+
+        // payment SSLCOMMERZ //
+
+        app.post('/create-payment', async (req, res) => {
+            const paymentInfo = req.body;
+            const trxId = new ObjectId().toString();
+            const initiateData = {
+                store_id: `${process.env.STORE_ID}`,
+                store_passwd: `${process.env.STORE_PASS}`,
+                total_amount: paymentInfo.amount,
+                currency: "BDT",
+                tran_id: trxId,
+                success_url: "http://localhost:5000/success-payment",
+                fail_url: "http://localhost:5000/fail",
+                cancel_url: "http://localhost:5000/cancel",
+                cus_name: "Customer Name",
+                cus_email: "cust@yahoo.com&",
+                cus_add1: "Dhaka&",
+                cus_add2: "Dhaka&",
+                cus_city: "Dhaka&",
+                cus_state: "Dhaka&",
+                cus_postcode: "1000&",
+                cus_country: "Bangladesh&",
+                cus_phone: "01711111111&",
+                cus_fax: "01711111111&",
+                shipping_method: "NO",
+                product_name: "Book",
+                product_category: "Book",
+                product_profile: "general",
+                multi_card_name: "mastercard,visacard,amexcard&",
+                value_a: "ref001_A&",
+                value_b: "ref002_B&",
+                value_c: "ref003_C&",
+                value_d: "ref004_D'"
+            }
+
+            const response = await axios({
+                method: "post",
+                url: "https://sandbox.sslcommerz.com/gwprocess/v4/api.php",
+                data: initiateData,
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            })
+
+            const saveData = {
+                cus_name: "Dumy",
+                paymentId: trxId,
+                amount: paymentInfo.amount,
+                status: "pending",
+            };
+
+            const save = await payments.insertOne(saveData);
+            if (save) {
+                res.send({
+                    paymentUrl: response.data.GatewayPageURL,
+                });
+            }
+        })
+
+        app.post('/success-payment', async (req, res) => {
+            const successData = req.body;
+            if (successData.status !== "VALID") {
+                throw new Error("Unauthorized payment, Invalid Payment");
+            }
+
+            // update the database //
+
+            const query = {
+                paymentId: successData.tran_id
+            }
+            const update = {
+                $set: {
+                    status: "Success",
+                }
+            }
+
+            const updateData = await payments.updateOne(query, update);
+            res.redirect("http://localhost:5173/success");
+
+            console.log("successData", successData)
+            console.log("updateData", updateData)
+        });
+
+        app.post('/fail', async (req, res) => {
+            res.redirect("http://localhost:5173/fail")
+        });
+
+        app.post('/cancel', async (req, res) => {
+            res.redirect("http://localhost:5173/cancel")
+        });
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
