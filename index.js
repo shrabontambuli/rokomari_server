@@ -60,6 +60,12 @@ async function run() {
 
         // post api //
 
+        app.post('/products', async (req, res) => {
+            const data = req.body;
+            const result = await productCollection.insertOne(data);
+            res.send(result);
+        })
+
         app.post('/selects', async (req, res) => {
             const data = req.body;
             const result = await selectsCollection.insertOne(data);
