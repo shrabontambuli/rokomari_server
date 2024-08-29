@@ -31,6 +31,7 @@ async function run() {
         await client.connect();
         const productCollection = client.db('rokomari').collection('allProduct');
         const selectsCollection = client.db('rokomari').collection('selects');
+        const usersCollection = client.db('rokomari').collection('users');
         const payments = client.db('rokomari').collection('payment');
 
 
@@ -72,6 +73,16 @@ async function run() {
             res.send(result);
         })
 
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const query = { email: user.email }
+            const existingUser = await usersCollection.findOne(query);
+            if (existingUser) {
+                return res.send({ message: 'user already existing' })
+            }
+            const result = await usersCollection.insertOne(user);
+            res.send(result);
+        });
         // put api //
 
         // delete api //
