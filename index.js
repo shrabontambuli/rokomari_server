@@ -35,6 +35,7 @@ async function run() {
         const selectsCollection = client.db('rokomari').collection('selects');
         const usersCollection = client.db('rokomari').collection('users');
         const payments = client.db('rokomari').collection('payment');
+        const smsCollection = client.db('rokomari').collection('sms');
 
 
         // get api //
@@ -63,6 +64,12 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/sms', async (req, res) => {
+            const cursor = smsCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
         // get api with id //
 
         app.get('/products/:id', async (req, res) => {
@@ -83,6 +90,12 @@ async function run() {
         app.post('/selects', async (req, res) => {
             const data = req.body;
             const result = await selectsCollection.insertOne(data);
+            res.send(result);
+        })
+
+        app.post('/sms', async (req, res) => {
+            const data = req.body;
+            const result = await smsCollection.insertOne(data);
             res.send(result);
         })
 
