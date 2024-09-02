@@ -132,9 +132,9 @@ async function run() {
                 total_amount: paymentInfo.amount,
                 currency: "BDT",
                 tran_id: trxId,
-                success_url: "https://rokomari-server.vercel.app/success-payment",
-                fail_url: "https://rokomari-server.vercel.app/fail",
-                cancel_url: "https://rokomari-server.vercel.app/cancel",
+                success_url: "https://rokomari-rouge.vercel.app/success-payment",
+                fail_url: "https://rokomari-rouge.vercel.app/fail",
+                cancel_url: "https://rokomari-rouge.vercel.app/cancel",
                 cus_name: "Customer Name",
                 cus_email: "cust@yahoo.com&",
                 cus_add1: "Dhaka&",
@@ -198,18 +198,18 @@ async function run() {
             }
 
             const updateData = await payments.updateOne(query, update);
-            res.redirect("https://rokomari-server.vercel.app/success");
+            res.redirect("https://rokomari-rouge.vercel.app/success");
 
             console.log("successData", successData)
             console.log("updateData", updateData)
         });
 
         app.post('/fail', async (req, res) => {
-            res.redirect("https://rokomari-server.vercel.app/fail")
+            res.redirect("https://rokomari-rouge.vercel.app/fail")
         });
 
         app.post('/cancel', async (req, res) => {
-            res.redirect("https://rokomari-server.vercel.app/cancel")
+            res.redirect("https://rokomari-rouge.vercel.app/cancel")
         });
 
 
