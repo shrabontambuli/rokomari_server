@@ -198,7 +198,7 @@ async function run() {
             }
 
             const updateData = await payments.updateOne(query, update);
-            res.redirect("http://localhost:5173/success");
+            res.redirect("https://rokomari-server.vercel.app/success");
 
             console.log("successData", successData)
             console.log("updateData", updateData)
